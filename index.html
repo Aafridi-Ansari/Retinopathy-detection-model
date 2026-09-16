@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetinaXAI - Explainable AI for Diabetic Retinopathy in Rural Healthcare</title>
+  <meta name="description" content="Explainable AI for Diabetic Retinopathy Screening in Rural India and International Deployments, featuring Grad-CAM heatmaps, multilingual RTL support, voice assistant, and medicine tracker.">
+  
+  <!-- Google Fonts Preconnect & Fonts for All 6 Regional Languages -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Gulzar&family=Mukta:wght@400;500;600;700;800&family=Mukta+Malar:wght@400;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Noto+Sans+Tamil:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="ltr-layout antialiased flex flex-col min-h-screen">
+
+  <!-- ====================================================================== -->
+  <!-- TOP HEADER & CONTROLS                                                  -->
+  <!-- ====================================================================== -->
+  <header class="bg-surface border-b border-theme sticky top-0 z-30 shadow-sm transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        
+        <!-- App Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500 to-teal-500 flex items-center justify-center text-white shadow-md shadow-sky-500/20 shrink-0">
+            <i class="fa-solid fa-eye text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-extrabold text-xl tracking-tight text-primary" data-i18n="appTitle">
+                RetinaXAI: Rural Eye Screening
+              </h1>
+              <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20">
+                XAI v2.4
+              </span>
+            </div>
+            <p class="text-xs text-muted font-medium" data-i18n="appSubtitle">
+              Explainable AI for Diabetic Retinopathy in Rural Healthcare
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Patient Stats, Database Status & Action Controls -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          
+          <!-- Database Sync Status Badge -->
+          <div id="db-sync-status-badge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block me-1.5"></span>
+            <span>SQLite DB Connected</span>
+          </div>
+
+          <!-- User Authentication Profile & Portal Capsule -->
+          <div class="flex items-center bg-surface border border-theme rounded-2xl p-1 shadow-sm">
+            <button type="button" id="open-login-modal-btn" class="flex items-center gap-2 px-2.5 py-1 rounded-xl hover:bg-surface-subtle transition-colors text-left" title="Click to Switch Role or Login">
+              <div id="auth-user-avatar" class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                <i class="fa-solid fa-user-nurse"></i>
+              </div>
+              <div class="leading-none">
+                <span id="auth-user-name" class="font-bold text-xs text-primary block truncate max-w-[110px]">Shanti Devi (ASHA)</span>
+                <span id="auth-user-role" class="text-[10px] text-muted block mt-0.5">👩‍⚕️ ASHA Health Worker</span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-[10px] text-muted ms-1"></i>
+            </button>
+            <button type="button" id="auth-logout-btn" class="text-xs text-muted hover:text-danger p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Logout">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+
+          <!-- Standalone Login Portal Direct Button -->
+          <a href="login.html" class="btn-secondary btn-sm rounded-xl px-2.5 py-1.5 text-xs flex items-center gap-1.5 text-primary" title="Go to Dedicated Enterprise Login Page">
+            <i class="fa-solid fa-door-open text-primary"></i>
+            <span class="hidden sm:inline font-bold">Login Portal</span>
+          </a>
+
+          <!-- Country Selector Dropdown -->
+          <div class="relative">
+            <label for="country-selector" class="sr-only">Select Country</label>
+            <div class="flex items-center bg-surface border border-theme rounded-xl px-2.5 py-1.5 text-xs shadow-sm focus-within:border-primary">
+              <i class="fa-solid fa-earth-asia text-muted me-1.5"></i>
+              <select id="country-selector" class="bg-transparent text-primary font-medium focus:outline-none cursor-pointer">
+                <option value="IN">🇮🇳 India (भारत)</option>
+                <option value="NP">🇳🇵 Nepal (नेपाल)</option>
+                <option value="AE">🇦🇪 UAE (الإمارات)</option>
+                <option value="SA">🇸🇦 Saudi Arabia (السعودية)</option>
+                <option value="BD">🇧🇩 Bangladesh (বাংলাদেশ)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Language Selector Dropdown (English, Nepali, Tamil, Arabic, Urdu, Hindi) -->
+          <div class="relative">
+            <label for="language-selector" class="sr-only">Select Language</label>
+            <div class="flex items-center bg-surface border border-theme rounded-xl px-2.5 py-1.5 text-xs shadow-sm focus-within:border-primary">
+              <i class="fa-solid fa-language text-muted me-1.5"></i>
+              <select id="language-selector" class="bg-transparent text-primary font-medium focus:outline-none cursor-pointer">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                <option value="ne">🇳🇵 नेपाली (Nepali)</option>
+                <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+                <option value="ar">🇦🇪 العربية (Arabic - RTL)</option>
+                <option value="ur">🇵🇰 اردو (Urdu - RTL)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dark / Light Mode Toggle Button -->
+          <button 
+            type="button" 
+            id="theme-toggle-btn" 
+            class="btn-secondary btn-sm rounded-xl px-3 py-1.5 text-xs flex items-center gap-1.5"
+            title="Toggle Light / Dark theme"
+          >
+            <i id="theme-toggle-icon" class="fa-solid fa-moon text-indigo-500"></i>
+            <span id="theme-toggle-text" class="hidden sm:inline" data-i18n="darkMode">Dark Mode</span>
+          </button>
+
+          <!-- Quick Emergency Button -->
+          <a 
+            id="ambulance-call-btn" 
+            href="tel:108" 
+            class="btn-sm bg-danger text-white font-bold rounded-xl px-3 py-1.5 text-xs inline-flex items-center gap-1.5 hover:bg-danger/90 shadow-sm"
+            title="Immediate Ambulance Dial"
+          >
+            <i class="fa-solid fa-phone-volume animate-bounce"></i>
+            <span id="ambulance-phone-display">108</span>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto mt-3 pt-2 border-t border-theme no-scrollbar">
+        <button type="button" class="nav-tab-btn active" data-tab="panel-screening">
+          <i class="fa-solid fa-microscope"></i>
+          <span data-i18n="navScreening">AI Screening & XAI</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-voice">
+          <i class="fa-solid fa-headset"></i>
+          <span data-i18n="navVoice">Voice Assistant</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-medicine">
+          <i class="fa-solid fa-prescription"></i>
+          <span data-i18n="navMedicine">Medicine Tracker</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-hospitals">
+          <i class="fa-solid fa-hospital"></i>
+          <span data-i18n="navHospitals">Emergency & Hospitals</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-profile">
+          <i class="fa-solid fa-id-card"></i>
+          <span data-i18n="navProfile">Patient Profile</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span data-i18n="navAnalytics">Analytics & Triage</span>
+        </button>
+
+        <button type="button" class="nav-tab-btn" data-tab="panel-about">
+          <i class="fa-solid fa-circle-info"></i>
+          <span data-i18n="navAbout">About & Impact</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====================================================================== -->
+  <!-- MAIN APP CONTAINER                                                     -->
+  <!-- ====================================================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- TAB 1: AI SCREENING & EXPLAINABLE AI (XAI) -->
+    <section id="panel-screening" class="tab-panel">
+      
+      <!-- Section Header -->
+      <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-black text-primary flex items-center gap-2" data-i18n="screeningHeading">
+            Diabetic Retinopathy Screening
+          </h2>
+          <p class="text-sm text-muted mt-1 max-w-2xl" data-i18n="screeningSubheading">
+            Upload a retinal fundus image or pick a clinical sample to view Explainable AI Grad-CAM heatmaps and diagnostic predictions.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="save-screening-db-btn" class="btn-secondary text-xs flex items-center gap-1.5" title="Persist this clinical screening to the SQLite Database">
+            <i class="fa-solid fa-cloud-arrow-up text-accent"></i>
+            <span>Save to Database</span>
+          </button>
+          <button type="button" id="doctor-sign-btn" class="doctor-only-view btn-secondary text-xs flex items-center gap-1.5 border-sky-500/40 text-sky-600 bg-sky-500/5 hover:bg-sky-500/10 hidden" title="Ophthalmologist Digital Verification">
+            <i class="fa-solid fa-file-signature text-sky-500"></i>
+            <span>Doctor Sign-Off</span>
+          </button>
+          <button type="button" id="print-report-btn" class="btn-primary text-xs">
+            <i class="fa-solid fa-file-medical"></i>
+            <span data-i18n="printReport">Print / Export Medical Report</span>
+          </button>
+          <button type="button" id="share-whatsapp-btn" class="btn-secondary text-xs text-emerald-600 hover:text-emerald-700">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span class="hidden sm:inline" data-i18n="shareWhatsApp">Share via WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Preset Sample Scans Bar -->
+      <div class="bg-surface border border-theme rounded-2xl p-4 mb-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <span class="text-xs font-bold text-primary flex items-center gap-1.5" data-i18n="selectSample">
+            <i class="fa-solid fa-list-check text-accent"></i>
+            <span>Or Select a Clinical Sample Scan:</span>
+          </span>
+          <span class="text-[11px] text-muted">Click any severity grade for instant 1-click evaluation:</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <button type="button" data-sample="normal" class="sample-scan-btn text-xs font-semibold p-2.5 rounded-xl border border-theme bg-surface-subtle hover:border-primary text-secondary text-left transition-all">
+            <span class="block text-[10px] text-muted uppercase font-bold">Grade 0</span>
+            <span class="text-primary font-bold block truncate" data-i18n="sampleNormal">Normal Retina</span>
+          </button>
+
+          <button type="button" data-sample="mild" class="sample-scan-btn text-xs font-semibold p-2.5 rounded-xl border border-theme bg-surface-subtle hover:border-primary text-secondary text-left transition-all">
+            <span class="block text-[10px] text-warning uppercase font-bold">Grade 1</span>
+            <span class="text-primary font-bold block truncate" data-i18n="sampleMild">Mild NPDR</span>
+          </button>
+
+          <button type="button" data-sample="moderate" class="sample-scan-btn active-sample ring-2 ring-primary text-xs font-semibold p-2.5 rounded-xl border border-theme bg-surface-subtle text-secondary text-left transition-all">
+            <span class="block text-[10px] text-amber-500 uppercase font-bold">Grade 2</span>
+            <span class="text-primary font-bold block truncate" data-i18n="sampleModerate">Moderate NPDR</span>
+          </button>
+
+          <button type="button" data-sample="severe" class="sample-scan-btn text-xs font-semibold p-2.5 rounded-xl border border-theme bg-surface-subtle hover:border-primary text-secondary text-left transition-all">
+            <span class="block text-[10px] text-danger uppercase font-bold">Grade 3</span>
+            <span class="text-primary font-bold block truncate" data-i18n="sampleSevere">Severe NPDR</span>
+          </button>
+
+          <button type="button" data-sample="pdr" class="sample-scan-btn text-xs font-semibold p-2.5 rounded-xl border border-theme bg-surface-subtle hover:border-primary text-secondary text-left transition-all">
+            <span class="block text-[10px] text-red-600 uppercase font-bold animate-pulse">Grade 4</span>
+            <span class="text-primary font-bold block truncate" data-i18n="samplePdr">Proliferative DR</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Two-Column Interactive Analysis Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Fundus Viewport & Visualization Controls (5 Cols) -->
+        <div class="lg:col-span-6 bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+          
+          <!-- Dropzone for custom fundus photo upload -->
+          <div id="fundus-dropzone" class="border-2 border-dashed border-theme hover:border-primary rounded-2xl p-4 text-center cursor-pointer transition-colors mb-5">
+            <input type="file" id="fundus-file-input" accept="image/jpeg, image/png" class="hidden">
+            <label for="fundus-file-input" class="cursor-pointer block">
+              <i class="fa-solid fa-cloud-arrow-up text-2xl text-accent mb-1.5"></i>
+              <p class="text-xs font-bold text-primary" data-i18n="uploadPrompt">Drag and drop retinal fundus photo or click to browse</p>
+              <p class="text-[11px] text-muted mt-0.5" data-i18n="uploadHint">Supports high-res fundus camera captures & smartphone ophthalmoscope attachments (JPG, PNG)</p>
+            </label>
+          </div>
+
+          <!-- Canvas Frame with Scanline Animation -->
+          <div class="canvas-wrapper relative overflow-hidden">
+            <div id="retina-scan-animation" class="scan-line hidden"></div>
+            <canvas id="retina-canvas" width="500" height="500"></canvas>
+          </div>
+
+          <!-- Visualization Layer Mode Selector -->
+          <div class="mt-5">
+            <div class="flex items-center justify-between text-xs font-bold text-primary mb-2">
+              <span data-i18n="xaiViewMode">Visualization Layer:</span>
+              <span class="text-muted font-medium text-[11px]">Toggle Grad-CAM / Lesions</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button type="button" data-layer="original" class="layer-btn btn-secondary btn-sm text-xs justify-center">
+                <span data-i18n="viewOriginal">Original Fundus</span>
+              </button>
+              <button type="button" data-layer="gradcam" class="layer-btn active bg-primary text-white btn-sm text-xs justify-center">
+                <span data-i18n="viewGradcam">Grad-CAM Heatmap</span>
+              </button>
+              <button type="button" data-layer="lesions" class="layer-btn btn-secondary btn-sm text-xs justify-center">
+                <span data-i18n="viewLesions">Lesion Map</span>
+              </button>
+              <button type="button" data-layer="vessels" class="layer-btn btn-secondary btn-sm text-xs justify-center">
+                <span data-i18n="viewVessels">Vessels</span>
+              </button>
+            </div>
+
+            <!-- Heatmap Opacity Slider -->
+            <div class="mt-3.5 flex items-center justify-between gap-3 bg-surface-subtle p-2.5 rounded-xl border border-theme">
+              <span class="text-xs font-semibold text-secondary" data-i18n="heatmapOpacity">Heatmap Opacity:</span>
+              <input type="range" id="heatmap-opacity-slider" min="0" max="1" step="0.05" value="0.65" class="w-1/2 cursor-pointer">
+              <span id="heatmap-opacity-display" class="text-xs font-bold text-primary w-10 text-right">65%</span>
+            </div>
+
+            <!-- Thermal Color Map Legend -->
+            <div class="mt-3 flex items-center justify-between px-1 text-[11px] text-muted">
+              <span>Normal Background (Cold / Blue)</span>
+              <div class="h-2.5 flex-1 mx-3 rounded-full bg-gradient-to-r from-blue-600 via-emerald-500 via-amber-400 to-red-600"></div>
+              <span>Severe Lesions (Hot / Red)</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Diagnostic & Explainability Assessment (7 Cols) -->
+        <div class="lg:col-span-6 space-y-4">
+          
+          <!-- Diagnosis Card -->
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            
+            <div class="flex items-start justify-between gap-3 border-b border-theme pb-4 mb-4">
+              <div>
+                <span class="text-xs font-bold text-muted uppercase tracking-wider" data-i18n="severityGrade">
+                  Severity Grade (ICDR):
+                </span>
+                <h3 id="severity-grade-display" class="text-xl font-black text-primary mt-1">
+                  ICDR Grade 2 - Moderate NPDR
+                </h3>
+              </div>
+              <span id="clinical-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold badge-danger">
+                High Risk
+              </span>
+            </div>
+
+            <!-- AI Confidence Meter -->
+            <div class="mb-5">
+              <div class="flex items-center justify-between text-xs font-semibold mb-1">
+                <span class="text-secondary" data-i18n="confidenceLabel">AI Confidence Score:</span>
+                <span id="ai-confidence-value" class="text-base font-black text-primary">95.8%</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div id="ai-confidence-bar" class="h-full bg-gradient-to-r from-sky-500 to-teal-500 rounded-full transition-all duration-700" style="width: 95.8%;"></div>
+              </div>
+            </div>
+
+            <!-- Retinal Biomarkers Detected Grid -->
+            <div>
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider mb-2.5" data-i18n="biomarkersDetected">
+                Retinal Biomarkers Detected:
+              </h4>
+
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="microaneurysms">Microaneurysms</span>
+                  <span id="bio-microaneurysms" class="font-bold text-base text-primary">18</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="hemorrhages">Hemorrhages</span>
+                  <span id="bio-hemorrhages" class="font-bold text-base text-danger">7</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="hardExudates">Hard Exudates</span>
+                  <span id="bio-hard-exudates" class="font-bold text-base text-amber-500">9</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="cottonWool">Cotton Wool Spots</span>
+                  <span id="bio-cotton-wool" class="font-bold text-base text-secondary">2</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="neovascularization">Neovascularization</span>
+                  <span id="bio-neovascularization" class="font-bold text-xs text-secondary truncate">Absent</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-subtle border border-theme">
+                  <span class="text-muted block text-[11px]" data-i18n="macularEdema">Macular Edema Risk</span>
+                  <span id="bio-macular-edema" class="font-bold text-xs text-danger truncate">Moderate (~18%)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Explainable AI (Grad-CAM Insights) Reasoning Box -->
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-2 text-primary font-bold text-sm">
+              <i class="fa-solid fa-brain text-accent"></i>
+              <span data-i18n="explanationTitle">Explainable AI Reasoning (Grad-CAM Insights)</span>
+            </div>
+            <p id="xai-clinical-explanation" class="text-xs leading-relaxed text-secondary bg-surface-subtle p-3.5 rounded-xl border border-theme">
+              Multiple high-activation clusters detected across superior-temporal and inferior-temporal arcades. Grad-CAM confirms substantial presence of dot-blot intraretinal hemorrhages and lipid-rich hard exudates forming a circinate pattern near the macula.
+            </p>
+
+            <!-- Recommended Action -->
+            <div class="mt-4 pt-3 border-t border-theme">
+              <div class="flex items-center gap-2 mb-1.5 text-primary font-bold text-xs">
+                <i class="fa-solid fa-stethoscope text-primary"></i>
+                <span data-i18n="recommendationTitle">Recommended Clinical Action:</span>
+              </div>
+              <p id="xai-action-recommendation" class="text-xs font-semibold text-secondary">
+                Refer to a district ophthalmologist within 2 to 4 weeks. Perform Optical Coherence Tomography (OCT) to rule out Diabetic Macular Edema.
+              </p>
+            </div>
+
+            <!-- Urgent Referral Warning Banner (Shown for Severe or PDR) -->
+            <div id="urgent-referral-banner" class="mt-3 p-3 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs flex items-center gap-2.5 font-bold hidden">
+              <i class="fa-solid fa-triangle-exclamation text-base shrink-0 animate-bounce"></i>
+              <span data-i18n="urgentReferral">Urgent Ophthalmology Referral Required (Within 48h)</span>
+            </div>
+          </div>
+
+          <!-- Medical Disclaimer for Community Health Workers -->
+          <div class="p-3 bg-surface-subtle border border-theme rounded-xl text-[11px] text-muted leading-relaxed flex items-start gap-2">
+            <i class="fa-solid fa-shield-halved text-muted mt-0.5 shrink-0"></i>
+            <span data-i18n="disclaimer">
+              Notice: This Explainable AI screening tool is built for triage assistance by community health workers and does not replace examination by a certified ophthalmologist.
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================================================== -->
+      <!-- EXPLAINABLE AI (XAI) NEURAL ATTRIBUTION PIPELINE ARCHITECTURE CARD     -->
+      <!-- ====================================================================== -->
+      <div class="mt-8 bg-surface border border-theme rounded-3xl p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 pb-4 border-b border-theme">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg shrink-0">
+              <i class="fa-solid fa-diagram-project"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base sm:text-lg font-black text-primary tracking-tight">
+                  Explainable AI (XAI) Neural Attribution Pipeline
+                </h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-600 border border-sky-500/20">
+                  Mathematical Traceability
+                </span>
+              </div>
+              <p class="text-xs text-muted mt-0.5">
+                Translating raw ocular pixels into verifiable clinical diagnostic decisions through deep gradient attribution
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-[11px] font-mono px-2.5 py-1 rounded-xl bg-surface-subtle border border-theme text-secondary font-bold">
+              Loss: Categorical Cross-Entropy • Backprop: Grad-CAM++
+            </span>
+          </div>
+        </div>
+
+        <!-- 5-Stage Neural Flow Pipeline Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 relative">
+          
+          <!-- STAGE 1 -->
+          <div class="neural-node p-4 rounded-2xl bg-surface-subtle border border-theme relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Stage 01</span>
+                <span class="w-2 h-2 rounded-full bg-sky-500 animate-ping"></span>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center text-sm font-bold mb-2">
+                <i class="fa-solid fa-image"></i>
+              </div>
+              <h4 class="font-bold text-xs text-primary">Retinal Fundus Frame</h4>
+              <p class="text-[11px] text-muted mt-1 leading-relaxed">
+                512×512×3 RGB matrix captured via smartphone ophthalmoscope attachment. CLAHE contrast equalization applied.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-theme/60 text-[10px] font-mono text-secondary font-semibold">
+              Dim: (512, 512, 3)
+            </div>
+          </div>
+
+          <!-- STAGE 2 -->
+          <div class="neural-node p-4 rounded-2xl bg-surface-subtle border border-theme relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-accent">Stage 02</span>
+                <span class="w-2 h-2 rounded-full bg-accent"></span>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-sm font-bold mb-2">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <h4 class="font-bold text-xs text-primary">Conv5 Feature Maps</h4>
+              <p class="text-[11px] text-muted mt-1 leading-relaxed">
+                Deep convolutional layers extract high-level representations of microaneurysms, hemorrhages, and lipid exudates.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-theme/60 text-[10px] font-mono text-secondary font-semibold">
+              Conv5: (16, 16, 2048)
+            </div>
+          </div>
+
+          <!-- STAGE 3 -->
+          <div class="neural-node p-4 rounded-2xl bg-surface-subtle border border-theme relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-500">Stage 03</span>
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-sm font-bold mb-2">
+                <i class="fa-solid fa-calculator"></i>
+              </div>
+              <h4 class="font-bold text-xs text-primary">Gradient Attribution</h4>
+              <p class="text-[11px] text-muted mt-1 leading-relaxed">
+                Computes partial derivative of target class score with respect to feature maps:
+                <span class="block mt-1 font-mono font-bold text-[10px] text-primary">α_k = 1/Z ∑(∂y^c / ∂A^k)</span>
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-theme/60 text-[10px] font-mono text-secondary font-semibold">
+              Weights: α ∈ ℝ^2048
+            </div>
+          </div>
+
+          <!-- STAGE 4 -->
+          <div class="neural-node p-4 rounded-2xl bg-surface-subtle border border-theme relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-red-500">Stage 04</span>
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-red-500/10 text-red-600 flex items-center justify-center text-sm font-bold mb-2">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <h4 class="font-bold text-xs text-primary">Grad-CAM Heatmap</h4>
+              <p class="text-[11px] text-muted mt-1 leading-relaxed">
+                Linear combination and ReLU activation localizes focal lesion clusters:
+                <span class="block mt-1 font-mono font-bold text-[10px] text-danger">L^c = ReLU(∑ α_k A^k)</span>
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-theme/60 text-[10px] font-mono text-secondary font-semibold">
+              Saliency: (500, 500)
+            </div>
+          </div>
+
+          <!-- STAGE 5 -->
+          <div class="neural-node p-4 rounded-2xl bg-surface-subtle border border-theme relative flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Stage 05</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-sm font-bold mb-2">
+                <i class="fa-solid fa-square-check"></i>
+              </div>
+              <h4 class="font-bold text-xs text-primary">ICDR Clinical Triage</h4>
+              <p class="text-[11px] text-muted mt-1 leading-relaxed">
+                Automated multi-stage classification (ICDR Grades 0–4) paired with immediate district tele-ophthalmology triage advice.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-theme/60 text-[10px] font-mono text-emerald-600 font-bold">
+              Output: Grade + Triage
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pipeline Bottom Explanatory Banner -->
+        <div class="mt-4 p-3 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+            <span class="font-bold text-primary">Zero Black-Box Guarantee:</span>
+            <span class="text-secondary">Every diagnostic recommendation corresponds to an explainable lesion biomarker verified on the retinal canvas.</span>
+          </div>
+          <span class="text-[11px] text-muted shrink-0 font-medium">Compliance: WHO & AIIMS Guidelines</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: INTERACTIVE VOICE ASSISTANT & CHATBOT -->
+    <section id="panel-voice" class="tab-panel hidden">
+      <div class="max-w-3xl mx-auto">
+        
+        <div class="mb-5 text-center">
+          <div class="w-14 h-14 mx-auto rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-2 shadow-sm">
+            <i class="fa-solid fa-robot text-2xl"></i>
+          </div>
+          <h2 class="text-2xl font-black text-primary" data-i18n="assistantHeading">
+            Arogya Netra AI Voice Assistant
+          </h2>
+          <p class="text-xs text-muted mt-1" data-i18n="assistantSubheading">
+            Interactive multilingual voice companion for rural patients and ASHA health workers.
+          </p>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-surface border border-theme rounded-3xl shadow-sm overflow-hidden flex flex-col h-[520px]">
+          
+          <!-- Chat Header Bar -->
+          <div class="px-5 py-3.5 border-b border-theme bg-surface-subtle flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-success animate-ping"></span>
+              <span class="text-xs font-bold text-primary">Arogya Netra (Online)</span>
+            </div>
+            <span id="mic-listening-indicator" class="hidden text-xs font-bold text-danger animate-pulse flex items-center gap-1.5" data-i18n="micListening">
+              <i class="fa-solid fa-microphone-lines"></i>
+              <span>Listening to your voice...</span>
+            </span>
+          </div>
+
+          <!-- Message History Window -->
+          <div id="voice-chat-messages" class="flex-1 p-5 overflow-y-auto space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Quick Suggestions Chips -->
+          <div class="px-5 py-2 border-t border-theme bg-surface-subtle/50 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button type="button" class="quick-inquiry-btn text-[11px] whitespace-nowrap bg-surface hover:bg-surface-hover border border-theme text-secondary px-3 py-1 rounded-full font-medium transition-colors" data-query="What is Diabetic Retinopathy and how can I prevent it?">
+              🩺 What is Retinopathy?
+            </button>
+            <button type="button" class="quick-inquiry-btn text-[11px] whitespace-nowrap bg-surface hover:bg-surface-hover border border-theme text-secondary px-3 py-1 rounded-full font-medium transition-colors" data-query="How should rural health workers take retinal photos with a smartphone?">
+              📱 Smartphone Camera Tips
+            </button>
+            <button type="button" class="quick-inquiry-btn text-[11px] whitespace-nowrap bg-surface hover:bg-surface-hover border border-theme text-secondary px-3 py-1 rounded-full font-medium transition-colors" data-query="Explain what the Grad-CAM heatmap colors mean.">
+              🔥 Heatmap Colors Meaning
+            </button>
+            <button type="button" class="quick-inquiry-btn text-[11px] whitespace-nowrap bg-surface hover:bg-surface-hover border border-theme text-secondary px-3 py-1 rounded-full font-medium transition-colors" data-query="What diet helps protect diabetic patients from blindness?">
+              🥗 Diabetic Eye Diet
+            </button>
+          </div>
+
+          <!-- Input Area -->
+          <form id="voice-chat-form" class="p-4 border-t border-theme bg-surface flex items-center gap-2">
+            <button 
+              type="button" 
+              id="voice-mic-trigger" 
+              class="w-11 h-11 rounded-2xl bg-primary text-white flex items-center justify-center hover:opacity-90 transition-all shrink-0 shadow-sm"
+              title="Click to speak with microphone"
+            >
+              <i class="fa-solid fa-microphone text-lg"></i>
+            </button>
+
+            <input 
+              type="text" 
+              id="voice-chat-input" 
+              class="flex-1 bg-surface-subtle border border-theme focus:border-primary rounded-2xl px-4 py-2.5 text-xs text-primary focus:outline-none"
+              placeholder="Ask about eye symptoms, diet, sugar control, or report explanation..."
+              data-i18n-placeholder="voiceInputPlaceholder"
+            >
+
+            <button type="submit" class="btn-primary btn-sm rounded-2xl px-4 py-2.5 text-xs shrink-0">
+              <i class="fa-solid fa-paper-plane me-1"></i>
+              <span data-i18n="sendBtn">Send</span>
+            </button>
+          </form>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: PATIENT MEDICATION & INSULIN TRACKER -->
+    <section id="panel-medicine" class="tab-panel hidden">
+      <div class="max-w-4xl mx-auto">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-black text-primary" data-i18n="medicineHeading">
+              Patient Medication & Insulin Tracker
+            </h2>
+            <p class="text-xs text-muted mt-1" data-i18n="medicineSubheading">
+              Monitor daily diabetic and ocular medication intake to ensure strict adherence and prevent vision loss.
+            </p>
+          </div>
+
+          <button type="button" id="open-add-med-modal" class="btn-primary text-xs shrink-0">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="addMedicine">Add New Medication</span>
+          </button>
+        </div>
+
+        <!-- Adherence Score Card -->
+        <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold text-muted uppercase tracking-wider" data-i18n="adherenceRate">
+                Today’s Medication Adherence:
+              </span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="adherence-percentage-value" class="text-3xl font-black text-primary">75%</span>
+                <span id="adherence-fraction-display" class="text-xs text-muted font-medium">3 / 4 doses taken today</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted" data-i18n="intakeStreak">Adherence Status:</span>
+              <span id="adherence-status-badge" class="px-3 py-1 rounded-full text-xs font-bold badge-warning">
+                Partial Adherence - Attention Needed
+              </span>
+            </div>
+          </div>
+
+          <div class="w-full h-3 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+            <div id="adherence-progress-bar" class="h-full bg-warning rounded-full transition-all duration-500" style="width: 75%;"></div>
+          </div>
+        </div>
+
+        <!-- Medicine List & Checklist -->
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-primary" data-i18n="medicineList">
+            Current Medications & Today’s Adherence Checklist:
+          </h3>
+        </div>
+
+        <div id="medicine-items-container">
+          <!-- Populated by medicine_tracker.js -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: EMERGENCY SUPPORT & EYE HOSPITALS -->
+    <section id="panel-hospitals" class="tab-panel hidden">
+      <div class="max-w-5xl mx-auto">
+        
+        <div class="mb-6">
+          <h2 class="text-2xl font-black text-primary" data-i18n="hospitalHeading">
+            Emergency Support & Specialized Eye Care
+          </h2>
+          <p class="text-xs text-muted mt-1" data-i18n="hospitalSubheading">
+            Select a country/region to locate emergency ambulance lines, government helplines, and top tele-ophthalmology institutions.
+          </p>
+        </div>
+
+        <!-- Emergency Hotlines Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          
+          <div class="bg-danger/10 border border-danger/30 rounded-2xl p-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-danger text-white flex items-center justify-center shrink-0 shadow-md">
+              <i class="fa-solid fa-truck-medical text-xl"></i>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold text-danger uppercase tracking-wider block" data-i18n="ambulanceNumber">
+                Ambulance Hotline:
+              </span>
+              <span id="ambulance-phone-display" class="text-lg font-black text-danger">108 / 102</span>
+            </div>
+          </div>
+
+          <div class="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md">
+              <i class="fa-solid fa-headset text-xl"></i>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold text-primary uppercase tracking-wider block" data-i18n="helplineNumber">
+                National Health Helpline:
+              </span>
+              <span id="helpline-phone-display" class="text-base font-black text-primary truncate">1075 / 104</span>
+            </div>
+          </div>
+
+          <div class="bg-accent/10 border border-accent/30 rounded-2xl p-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center shrink-0 shadow-md">
+              <i class="fa-solid fa-users text-xl"></i>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold text-accent uppercase tracking-wider block">
+                Rural Community Health:
+              </span>
+              <span id="rural-support-display" class="text-xs font-semibold text-secondary block line-clamp-2">
+                ASHA Rural Health Link via PHC
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Top Eye Hospitals Network -->
+        <div class="mb-4">
+          <h3 class="text-base font-bold text-primary flex items-center gap-2" data-i18n="specialistHospitals">
+            <i class="fa-solid fa-hospital-user text-accent"></i>
+            <span>Top Tertiary Eye Hospitals & Institutes:</span>
+          </h3>
+        </div>
+
+        <div id="hospital-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated by hospital_data.js -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 5: PATIENT PROFILE & CLINICAL RECORD -->
+    <section id="panel-profile" class="tab-panel hidden">
+      <div class="max-w-3xl mx-auto">
+        
+        <div class="mb-6">
+          <h2 class="text-2xl font-black text-primary" data-i18n="profileHeading">
+            Patient Health & Clinical Record
+          </h2>
+          <p class="text-xs text-muted mt-1" data-i18n="profileSubheading">
+            Manage patient demographics, diabetes history, and screening records for rural community outreach.
+          </p>
+        </div>
+
+        <form id="patient-profile-form" class="bg-surface border border-theme rounded-2xl p-6 shadow-sm space-y-4">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <div>
+              <label for="profile-fullname" class="block text-xs font-bold text-primary mb-1.5" data-i18n="fullName">Full Patient Name:</label>
+              <input type="text" id="profile-fullname" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="profile-age" class="block text-xs font-bold text-primary mb-1.5" data-i18n="age">Age:</label>
+                <input type="number" id="profile-age" min="1" max="120" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+              </div>
+
+              <div>
+                <label for="profile-gender" class="block text-xs font-bold text-primary mb-1.5" data-i18n="gender">Gender:</label>
+                <select id="profile-gender" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+                  <option value="female" data-i18n="female">Female</option>
+                  <option value="male" data-i18n="male">Male</option>
+                  <option value="other" data-i18n="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="profile-diabetes-type" class="block text-xs font-bold text-primary mb-1.5" data-i18n="diabetesType">Diabetes Classification:</label>
+              <select id="profile-diabetes-type" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+                <option value="type2" data-i18n="type2">Type 2 Diabetes</option>
+                <option value="type1" data-i18n="type1">Type 1 Diabetes</option>
+                <option value="gestational" data-i18n="gestational">Gestational Diabetes</option>
+                <option value="preDiabetes" data-i18n="preDiabetes">Pre-Diabetes</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="profile-duration" class="block text-xs font-bold text-primary mb-1.5" data-i18n="durationYears">Years Living with Diabetes:</label>
+              <input type="number" id="profile-duration" min="0" max="60" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+              <label for="profile-hba1c" class="block text-xs font-bold text-primary mb-1.5" data-i18n="hba1c">Latest HbA1c Level (%):</label>
+              <input type="text" id="profile-hba1c" placeholder="e.g. 8.4" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+              <label for="profile-bp" class="block text-xs font-bold text-primary mb-1.5" data-i18n="bloodPressure">Blood Pressure (mmHg):</label>
+              <input type="text" id="profile-bp" placeholder="e.g. 130/85" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+              <label for="profile-worker-id" class="block text-xs font-bold text-primary mb-1.5" data-i18n="healthWorkerId">ASHA / Health Worker ID:</label>
+              <input type="text" id="profile-worker-id" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+              <label for="profile-phone" class="block text-xs font-bold text-primary mb-1.5" data-i18n="phone">Contact Number:</label>
+              <input type="tel" id="profile-phone" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            </div>
+
+          </div>
+
+          <div>
+            <label for="profile-village" class="block text-xs font-bold text-primary mb-1.5" data-i18n="districtVillage">Village / District / PHC:</label>
+            <input type="text" id="profile-village" class="w-full bg-surface-subtle border border-theme rounded-xl px-3.5 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+          </div>
+
+          <div class="pt-3 border-t border-theme flex justify-end">
+            <button type="submit" class="btn-primary text-xs">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span data-i18n="saveProfile">Save Patient Profile</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </section>
+
+    <!-- TAB 6: ABOUT & IMPACT FOR HACKATHON -->
+    <section id="panel-about" class="tab-panel hidden">
+      <div class="max-w-4xl mx-auto space-y-6">
+        
+        <div class="bg-surface border border-theme rounded-2xl p-6 shadow-sm">
+          <span class="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full border border-primary/20">
+            Problem Statement & Hackathon Solution
+          </span>
+          <h2 class="text-2xl font-black text-primary mt-2">
+            Explainable AI for Diabetic Retinopathy Screening in Rural India
+          </h2>
+          <p class="text-xs text-muted leading-relaxed mt-2">
+            India has over 77 million diabetic individuals. In rural areas, the ratio of ophthalmologists is less than 1 per 250,000 citizens. Because early Diabetic Retinopathy is completely asymptomatic, over 80% of affected rural patients only seek medical attention when irreversible blindness has already occurred.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+            <div class="p-4 rounded-xl bg-surface-subtle border border-theme">
+              <i class="fa-solid fa-eye-slash text-2xl text-danger mb-2"></i>
+              <h4 class="font-bold text-sm text-primary">Zero Early Symptoms</h4>
+              <p class="text-[11px] text-muted mt-1">Patients feel zero pain while microvascular capillary breakdown silently progresses to retinal detachment.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-surface-subtle border border-theme">
+              <i class="fa-solid fa-mobile-screen-button text-2xl text-accent mb-2"></i>
+              <h4 class="font-bold text-sm text-primary">Smartphone Telescreening</h4>
+              <p class="text-[11px] text-muted mt-1">Equipping rural ASHA workers with low-cost condensing lenses to capture fundus scans at primary health sub-centers.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-surface-subtle border border-theme">
+              <i class="fa-solid fa-wand-magic-sparkles text-2xl text-primary mb-2"></i>
+              <h4 class="font-bold text-sm text-primary">Trust through Grad-CAM XAI</h4>
+              <p class="text-[11px] text-muted mt-1">Providing explainable heatmaps so rural healthcare providers and patients clearly understand WHY the AI flagged the condition.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-surface border border-theme rounded-2xl p-6 shadow-sm">
+          <h3 class="text-lg font-bold text-primary mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-primary"></i>
+            <span>International Clinical Diabetic Retinopathy (ICDR) Grading Scale</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-secondary border border-theme rounded-xl">
+              <thead class="bg-surface-subtle text-muted text-[11px] uppercase font-bold border-b border-theme">
+                <tr>
+                  <th class="p-3">Stage</th>
+                  <th class="p-3">Diagnosis</th>
+                  <th class="p-3">Key Pathological Biomarkers</th>
+                  <th class="p-3">Urgency</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-theme">
+                <tr>
+                  <td class="p-3 font-bold">Grade 0</td>
+                  <td class="p-3">No DR</td>
+                  <td class="p-3 text-muted">No microaneurysms or retinal abnormalities</td>
+                  <td class="p-3"><span class="badge-success px-2 py-0.5 rounded text-[10px] font-bold">Annual Follow-up</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-bold">Grade 1</td>
+                  <td class="p-3">Mild NPDR</td>
+                  <td class="p-3 text-muted">Microaneurysms only (isolated focal ballooning)</td>
+                  <td class="p-3"><span class="badge-warning px-2 py-0.5 rounded text-[10px] font-bold">6-9 Months</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-bold">Grade 2</td>
+                  <td class="p-3">Moderate NPDR</td>
+                  <td class="p-3 text-muted">More than microaneurysms: blot hemorrhages, hard exudates</td>
+                  <td class="p-3"><span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">2-4 Weeks Specialist</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-bold">Grade 3</td>
+                  <td class="p-3">Severe NPDR</td>
+                  <td class="p-3 text-muted">4-2-1 rule: hemorrhages in 4 quadrants, venous beading, IRMA</td>
+                  <td class="p-3"><span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold">Urgent (48-72h)</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-bold">Grade 4</td>
+                  <td class="p-3">Proliferative DR (PDR)</td>
+                  <td class="p-3 text-muted">Neovascularization, preretinal/vitreous hemorrhage</td>
+                  <td class="p-3"><span class="badge-danger px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">Emergency Same-Day</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+    <!-- TAB 7: EXECUTIVE ANALYTICS & TELE-TRIAGE DASHBOARD -->
+    <section id="panel-analytics" class="tab-panel hidden">
+      <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-black text-primary flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-accent"></i>
+              <span>Clinical Analytics & Tele-Triage Dashboard</span>
+            </h2>
+            <p class="text-xs text-muted mt-1">
+              Real-time epidemiological metrics, rural disease prevalence, and tele-ophthalmology referral triage queue.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="refresh-analytics-btn" class="btn-secondary btn-sm text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Refresh Stats</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-muted uppercase tracking-wider">Total Screened</span>
+              <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
+                <i class="fa-solid fa-eye text-sm"></i>
+              </div>
+            </div>
+            <div class="text-2xl font-black text-primary" id="kpi-total-screenings">147</div>
+            <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-1">
+              <i class="fa-solid fa-arrow-trend-up"></i> +18% this month
+            </span>
+          </div>
+
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-muted uppercase tracking-wider">High Risk Triage</span>
+              <div class="w-8 h-8 rounded-xl bg-danger/10 text-danger flex items-center justify-center">
+                <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+              </div>
+            </div>
+            <div class="text-2xl font-black text-danger" id="kpi-high-risk">42</div>
+            <span class="text-[11px] text-danger font-semibold flex items-center gap-1 mt-1">
+              Severe NPDR & PDR Cases
+            </span>
+          </div>
+
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-muted uppercase tracking-wider">Rural Outreach</span>
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                <i class="fa-solid fa-tree-city text-sm"></i>
+              </div>
+            </div>
+            <div class="text-2xl font-black text-primary" id="kpi-rural-reach">18 Villages</div>
+            <span class="text-[11px] text-muted font-semibold mt-1 block">
+              128 Patients Enrolled
+            </span>
+          </div>
+
+          <div class="bg-surface border border-theme rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-muted uppercase tracking-wider">Avg Adherence</span>
+              <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <i class="fa-solid fa-pills text-sm"></i>
+              </div>
+            </div>
+            <div class="text-2xl font-black text-primary" id="kpi-adherence">84.2%</div>
+            <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-1">
+              29 Blindness Cases Prevented
+            </span>
+          </div>
+        </div>
+
+        <!-- Disease Prevalence Distribution -->
+        <div class="bg-surface border border-theme rounded-2xl p-6 shadow-sm">
+          <h3 class="text-sm font-bold text-primary mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-accent"></i>
+            <span>ICDR Diabetic Retinopathy Severity Distribution in Screened Population</span>
+          </h3>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grade 0: Normal Retina (No DR)</span>
+                <span class="text-muted">65 cases (44%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 44%;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grade 1: Mild NPDR (Microaneurysms)</span>
+                <span class="text-muted">38 cases (26%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div class="h-full bg-amber-400 rounded-full" style="width: 26%;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grade 2: Moderate NPDR (Hemorrhages / Exudates)</span>
+                <span class="text-muted">28 cases (19%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div class="h-full bg-orange-500 rounded-full" style="width: 19%;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grade 3: Severe NPDR (4-2-1 Criteria)</span>
+                <span class="text-danger font-bold">15 cases (10%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div class="h-full bg-red-600 rounded-full" style="width: 10%;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>Grade 4: Proliferative DR (Neovascularization)</span>
+                <span class="text-red-700 font-bold">6 cases (4%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-surface-subtle overflow-hidden border border-theme">
+                <div class="h-full bg-red-800 rounded-full animate-pulse" style="width: 4%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tele-Ophthalmology Triage Inbox Table -->
+        <div class="bg-surface border border-theme rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-primary flex items-center gap-2">
+              <i class="fa-solid fa-inbox text-primary"></i>
+              <span>Tele-Ophthalmology Rural Referral Queue</span>
+            </h3>
+            <span class="text-[11px] font-semibold text-muted">Awaiting Specialist Validation</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-secondary border border-theme rounded-xl">
+              <thead class="bg-surface-subtle text-muted text-[11px] uppercase font-bold border-b border-theme">
+                <tr>
+                  <th class="p-3">Patient Name</th>
+                  <th class="p-3">Age / Sex</th>
+                  <th class="p-3">Location</th>
+                  <th class="p-3">AI ICDR Grade</th>
+                  <th class="p-3">Risk Level</th>
+                  <th class="p-3">Doctor Review</th>
+                  <th class="p-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-theme" id="tele-triage-table-body">
+                <!-- Dynamically populated from SQLite DB / client -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================== -->
+  <!-- MODALS (Add Medicine & Print Report)                                   -->
+  <!-- ====================================================================== -->
+  
+  <!-- Add Medicine Modal -->
+  <div id="add-medicine-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-theme rounded-3xl max-w-md w-full p-6 shadow-2xl animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-theme mb-4">
+        <h3 class="text-lg font-bold text-primary flex items-center gap-2" data-i18n="addMedicine">
+          <i class="fa-solid fa-pills text-accent"></i>
+          <span>Add New Medication</span>
+        </h3>
+        <button type="button" id="close-med-modal" class="text-muted hover:text-primary">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="add-medicine-form" class="space-y-3.5">
+        <div>
+          <label for="med-name-input" class="block text-xs font-bold text-primary mb-1" data-i18n="medicineName">Medicine Name:</label>
+          <input type="text" id="med-name-input" placeholder="e.g. Metformin, Insulin Glargine" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="med-dosage-input" class="block text-xs font-bold text-primary mb-1" data-i18n="dosage">Dosage:</label>
+            <input type="text" id="med-dosage-input" placeholder="e.g. 500mg, 10 units" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+          </div>
+          <div>
+            <label for="med-type-input" class="block text-xs font-bold text-primary mb-1" data-i18n="type">Type:</label>
+            <select id="med-type-input" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+              <option value="tablet" data-i18n="tablet">Tablet / Capsule</option>
+              <option value="insulin" data-i18n="insulin">Insulin Injection</option>
+              <option value="eyedrop" data-i18n="eyedrop">Eye Drops</option>
+              <option value="syrup" data-i18n="syrup">Syrup / Liquid</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="med-timing-input" class="block text-xs font-bold text-primary mb-1" data-i18n="mealTiming">Meal Timing:</label>
+          <select id="med-timing-input" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+            <option value="afterMeal" data-i18n="afterMeal">After Meal</option>
+            <option value="beforeMeal" data-i18n="beforeMeal">Before Meal</option>
+            <option value="withMeal" data-i18n="withMeal">With Meal</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-primary mb-1.5" data-i18n="frequency">Daily Schedule (Slots):</label>
+          <div class="flex items-center gap-4 text-xs font-medium text-secondary">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="med-slot-morning" checked class="rounded">
+              <span data-i18n="morning">Morning</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="med-slot-afternoon" class="rounded">
+              <span data-i18n="afternoon">Afternoon</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="med-slot-night" checked class="rounded">
+              <span data-i18n="night">Night</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-theme flex justify-end gap-2">
+          <button type="submit" class="btn-primary btn-sm text-xs" data-i18n="saveMedicine">
+            Save Medication
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Medical Report Modal (Clinical Referral Slip) -->
+  <div id="report-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden overflow-y-auto">
+    <div class="bg-white text-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl my-8 relative print-only-report">
+      
+      <!-- Report Header -->
+      <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4 mb-5">
+        <div>
+          <h2 class="text-2xl font-black text-sky-900 tracking-tight">RETINA-XAI CLINICAL REFERRAL REPORT</h2>
+          <p class="text-xs text-slate-600 font-semibold mt-0.5">Rural Telescreening & Explainable AI Diagnostic Assessment</p>
+        </div>
+        <div class="text-right text-xs text-slate-500">
+          <span>Date: </span><span id="rep-report-date" class="font-bold text-slate-800">17 Sep 2026</span>
+          <span class="block text-[10px] text-emerald-700 font-bold">Validated via Grad-CAM XAI</span>
+        </div>
+      </div>
+
+      <!-- Patient Demographics Section -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">Patient Name</span>
+          <span id="rep-patient-name" class="font-bold text-slate-900 text-sm">Rameshwar Devi</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">Age & Gender</span>
+          <span id="rep-patient-age-gender" class="font-bold text-slate-900">54 Years • FEMALE</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">Diabetes Classification</span>
+          <span id="rep-patient-diabetes" class="font-bold text-slate-900">Type 2 (9 Years)</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">HbA1c & Blood Pressure</span>
+          <span class="font-bold text-slate-900"><span id="rep-patient-hba1c">9.2%</span> • <span id="rep-patient-bp">142/90</span></span>
+        </div>
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">ASHA Worker / PHC ID</span>
+          <span id="rep-health-worker" class="font-bold text-slate-900">ASHA-UP-VNS-042</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block text-[10px] uppercase font-bold">Location</span>
+          <span id="rep-district-village" class="font-bold text-slate-900 truncate">Varanasi, UP</span>
+        </div>
+      </div>
+
+      <!-- Fundus Scan Snapshot & Findings Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center mb-5 border-b border-slate-200 pb-5">
+        <div class="sm:col-span-5 flex justify-center">
+          <img id="rep-retina-image" alt="Fundus Scan with Grad-CAM" class="w-48 h-48 rounded-full border-4 border-slate-900 shadow-md object-contain bg-black">
+        </div>
+        <div class="sm:col-span-7 space-y-2 text-xs">
+          <div>
+            <span class="text-slate-500 block text-[10px] uppercase font-bold">AI Diagnosis (ICDR Classification):</span>
+            <span id="rep-diagnosis-grade" class="font-black text-slate-900 text-base">ICDR Grade 2 - Moderate NPDR</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <div>
+              <span class="text-slate-500 text-[10px] uppercase font-bold block">AI Confidence:</span>
+              <span id="rep-confidence-score" class="font-bold text-sky-700">95.8%</span>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[10px] uppercase font-bold block">Clinical Risk Level:</span>
+              <span id="rep-clinical-risk" class="font-bold text-red-600">High Risk</span>
+            </div>
+          </div>
+          <div>
+            <span class="text-slate-500 text-[10px] uppercase font-bold block">Grad-CAM XAI Finding:</span>
+            <p id="rep-explanation" class="text-slate-700 text-[11px] leading-relaxed line-clamp-3">
+              Multiple high-activation clusters detected. Dot-blot hemorrhages and hard exudates detected in macular arcades.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Plan & Referral Destination -->
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 text-xs text-amber-900">
+        <span class="font-black text-amber-950 block mb-1">Recommended Referral Action:</span>
+        <p id="rep-recommendation" class="font-medium text-xs leading-relaxed">
+          Refer to a district ophthalmologist within 2 to 4 weeks. Perform Optical Coherence Tomography (OCT) to rule out Diabetic Macular Edema.
+        </p>
+        <div class="mt-2 pt-2 border-t border-amber-200/80 flex items-center justify-between text-[11px] font-bold">
+          <span>Nearest Referral Hospital: <strong id="rep-hospital-referral">Aravind Eye Care System</strong></span>
+          <span>Emergency Ambulance: <strong id="rep-ambulance-call">108 / 102</strong></span>
+        </div>
+      </div>
+
+      <!-- Footer & Signatures -->
+      <div class="flex items-end justify-between pt-4 border-t border-slate-200 text-xs text-slate-500">
+        <div>
+          <p class="text-[10px] text-slate-400">Generated by RetinaXAI Healthcare Suite</p>
+          <p class="text-[10px] text-slate-400">Rural Diabetic Retinopathy Triage</p>
+        </div>
+        <div class="text-center">
+          <div class="w-40 border-b border-slate-400 mb-1"></div>
+          <span class="text-[10px] text-slate-600 font-bold uppercase">Referring Health Officer / Signature</span>
+        </div>
+      </div>
+
+      <!-- Modal Action Buttons (Hidden during Print) -->
+      <div class="mt-6 flex items-center justify-end gap-2.5 no-print">
+        <button type="button" onclick="window.closeReportModal()" class="btn-secondary btn-sm text-xs">
+          Close
+        </button>
+        <button type="button" onclick="window.triggerPrintDialog()" class="btn-primary btn-sm text-xs">
+          <i class="fa-solid fa-print"></i>
+          <span>Print / Save as PDF</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- AUTHENTICATION & LOGIN PORTAL MODAL                                    -->
+  <!-- ====================================================================== -->
+  <div id="login-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-theme rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl animate-fade-in relative">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-theme mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <i class="fa-solid fa-lock text-sm"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-primary">RetinaXAI Portal</h3>
+            <p class="text-[11px] text-muted">Role-Based Medical Authentication</p>
+          </div>
+        </div>
+        <button type="button" id="close-login-modal-btn" class="text-muted hover:text-primary">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- 1-Click Demo Logins for Hackathon Judges -->
+      <div class="bg-surface-subtle p-3.5 rounded-2xl border border-theme mb-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>Instant Demo Logins (Judges):</span>
+          </span>
+          <span class="text-[10px] text-muted">1-Click switch</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button type="button" class="demo-login-btn p-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/15 text-emerald-700 font-semibold text-center transition-all" data-role="asha">
+            <span class="block text-sm">👩‍⚕️</span>
+            <span class="block text-[11px] font-bold mt-0.5 truncate">ASHA Worker</span>
+          </button>
+          <button type="button" class="demo-login-btn p-2 rounded-xl border border-sky-500/30 bg-sky-500/5 hover:bg-sky-500/15 text-sky-700 font-semibold text-center transition-all" data-role="doctor">
+            <span class="block text-sm">👨‍⚕️</span>
+            <span class="block text-[11px] font-bold mt-0.5 truncate">Ophthalmologist</span>
+          </button>
+          <button type="button" class="demo-login-btn p-2 rounded-xl border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/15 text-purple-700 font-semibold text-center transition-all" data-role="patient">
+            <span class="block text-sm">👤</span>
+            <span class="block text-[11px] font-bold mt-0.5 truncate">Patient</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs: Sign In / Register -->
+      <div class="flex border-b border-theme mb-4">
+        <button type="button" id="auth-tab-signin" class="flex-1 pb-2 font-bold text-xs text-primary border-b-2 border-primary">
+          Sign In
+        </button>
+        <button type="button" id="auth-tab-signup" class="flex-1 pb-2 font-bold text-xs text-muted border-b-2 border-transparent">
+          Register New Account
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="signin-form" class="space-y-3">
+        <div>
+          <label for="signin-email" class="block text-xs font-bold text-primary mb-1">Email / ID:</label>
+          <input type="email" id="signin-email" value="asha@retinaxai.org" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+        <div>
+          <label for="signin-password" class="block text-xs font-bold text-primary mb-1">Password:</label>
+          <input type="password" id="signin-password" value="asha123" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+        <button type="submit" class="w-full btn-primary text-xs py-2.5 rounded-xl font-bold mt-2">
+          <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>
+          <span>Sign In to RetinaXAI</span>
+        </button>
+      </form>
+
+      <!-- Register Form (Hidden by default) -->
+      <form id="signup-form" class="space-y-3 hidden">
+        <div>
+          <label for="signup-name" class="block text-xs font-bold text-primary mb-1">Full Name:</label>
+          <input type="text" id="signup-name" placeholder="Dr. / Nurse / Name" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+        <div>
+          <label for="signup-email" class="block text-xs font-bold text-primary mb-1">Email Address:</label>
+          <input type="email" id="signup-email" placeholder="name@clinic.org" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="signup-role" class="block text-xs font-bold text-primary mb-1">Role:</label>
+            <select id="signup-role" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+              <option value="asha_worker">ASHA Health Worker</option>
+              <option value="doctor">Doctor / Specialist</option>
+              <option value="patient">Patient</option>
+            </select>
+          </div>
+          <div>
+            <label for="signup-district" class="block text-xs font-bold text-primary mb-1">District / PHC:</label>
+            <input type="text" id="signup-district" placeholder="e.g. Varanasi PHC" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary">
+          </div>
+        </div>
+        <div>
+          <label for="signup-password" class="block text-xs font-bold text-primary mb-1">Password:</label>
+          <input type="password" id="signup-password" placeholder="Create a password" class="w-full bg-surface-subtle border border-theme rounded-xl px-3 py-2 text-xs text-primary focus:outline-none focus:border-primary" required>
+        </div>
+        <button type="submit" class="w-full btn-primary text-xs py-2.5 rounded-xl font-bold mt-2">
+          <i class="fa-solid fa-user-plus me-1"></i>
+          <span>Create Account & Start</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- DOCTOR DIGITAL SIGN-OFF MODAL                                          -->
+  <!-- ====================================================================== -->
+  <div id="doctor-sign-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-theme rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl animate-fade-in relative">
+      <div class="flex items-center justify-between pb-3 border-b border-theme mb-4">
+        <h3 class="text-base font-bold text-primary flex items-center gap-2">
+          <i class="fa-solid fa-file-signature text-sky-500"></i>
+          <span>Specialist Verification & Digital Stamp</span>
+        </h3>
+        <button type="button" id="close-doc-sign-modal" class="text-muted hover:text-primary">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="doctor-sign-form" class="space-y-3.5 text-xs">
+        <div class="p-3 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-800">
+          <span class="font-bold block mb-0.5">Verified Medical Officer:</span>
+          <p id="doc-sign-doctor-name" class="font-medium">Dr. Rajesh Varma, MS (Retina), AIIMS</p>
+          <span class="text-[10px] text-sky-600 block">Medical Registration #MCI-RET-94281</span>
+        </div>
+
+        <div>
+          <label for="doc-clinical-notes" class="block font-bold text-primary mb-1">Clinical Impressions & Tele-Triage Remarks:</label>
+          <textarea id="doc-clinical-notes" rows="3" class="w-full bg-surface-subtle border border-theme rounded-xl p-2.5 text-xs text-primary focus:outline-none focus:border-primary" placeholder="Enter clinical comments, OCT recommendations, or laser urgency..."></textarea>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="doc-confirm-checkbox" checked class="rounded">
+          <label for="doc-confirm-checkbox" class="text-secondary font-medium">
+            I confirm review of the Grad-CAM heatmaps and validate this referral slip.
+          </label>
+        </div>
+
+        <div class="pt-3 border-t border-theme flex justify-end gap-2">
+          <button type="button" id="cancel-doc-sign" class="btn-secondary btn-sm">Cancel</button>
+          <button type="submit" class="btn-primary btn-sm">
+            <i class="fa-solid fa-stamp me-1"></i>
+            <span>Affix Digital Signature & Save</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Script Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
